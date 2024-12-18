@@ -2,3 +2,5 @@ streamlit
 numpy
 pandas
 openpyxl
+io
+xlsxwriter

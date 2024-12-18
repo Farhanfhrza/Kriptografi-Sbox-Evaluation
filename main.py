@@ -12,6 +12,7 @@ from utils.avalanche_criterion import strict_avalanche_criterion
 from utils.differential_approximation import calculate_dap
 from utils.entropy import compute_entropy
 from utils.bit_independence import calculate_bic_sac, calculate_bic_nl
+from utils.create_result import add_download_buttons 
 
 def main():
     st.title('Advanced S-box Cryptographic Analysis')
@@ -72,6 +73,9 @@ def main():
                             columns=[f'{i+1}' for i in range(16)],   
                             index=[f'{i+1}' for i in range(16)])  
         )  
+
+        # Dictionary to store results for potential download  
+        sbox_results = {} 
         
         # Perform selected evaluations
         st.subheader('S-box Cryptographic Evaluation')
@@ -80,11 +84,13 @@ def main():
         if 'Linear Approximation Probability (LAP)' in evaluation_options:
             lap_value = linear_approximation_probability(sbox)
             st.metric('Linear Approximation Probability (LAP)', f'{lap_value:.6f}')
+            sbox_results['lap'] = lap_value 
         
         # Nonlinearity
         if 'Nonlinearity' in evaluation_options:
             nonlinearity = compute_nonlinearity(sbox)
             st.metric('Nonlinearity', str(nonlinearity))
+            sbox_results['nonlinearity'] = nonlinearity 
         
         # # Differential Uniformity
         # if 'Differential Uniformity' in evaluation_options:
@@ -99,13 +105,28 @@ def main():
 
         # Strict Avalanche Criterion  
         if 'Strict Avalanche Criterion (SAC)' in evaluation_options:  
-            sac_value = strict_avalanche_criterion(sbox)  
-            st.metric('Strict Avalanche Criterion (SAC)', f'{sac_value:.10f}')  
+            sac_value, sac_matrix = strict_avalanche_criterion(sbox)  
+            st.metric('Strict Avalanche Criterion (SAC)', f'{sac_value:.10f}')
+        
+            # Menampilkan matriks SAC 8x8  
+            result_df = pd.DataFrame(  
+                sac_matrix,   
+                columns=[f'{i}' for i in range(8)],   
+                index=[f'{i}' for i in range(8)]  
+            )  
+
+            st.write("SAC Matrix:")  
+            st.dataframe(result_df, use_container_width=True)  
+            
+            # Store SAC results  
+            sbox_results['sac_value'] = sac_value  
+            sbox_results['sac_matrix'] = sac_matrix
         
         # Differential Approximation Probability  
         if 'Differential Approximation Probability (DAP)' in evaluation_options:  
             dap_value = calculate_dap(sbox)  
-            st.metric('Differential Approximation Probability (DAP)', f'{dap_value:.10f}')  
+            st.metric('Differential Approximation Probability (DAP)', f'{dap_value:.10f}')
+            sbox_results['dap'] = dap_value 
         
         # Entropy Analysis  
         # if 'Entropy Analysis' in evaluation_options:  
@@ -116,25 +137,17 @@ def main():
         # BIC-SAC  
         if 'Bit Independence Criterion - SAC (BIC-SAC)' in evaluation_options:  
             bic_sac_value = calculate_bic_sac(sbox)  
-            st.metric('Bit Independence Criterion - SAC (BIC-SAC)', f'{bic_sac_value:.10f}')  
+            st.metric('Bit Independence Criterion - SAC (BIC-SAC)', f'{bic_sac_value:.10f}')
+            sbox_results['bic_sac'] = bic_sac_value 
         
         # BIC-NL  
         if 'Bit Independence Criterion - Nonlinearity (BIC-NL)' in evaluation_options:  
             bic_nl_value = calculate_bic_nl(sbox)  
-            st.metric('Bit Independence Criterion - Nonlinearity (BIC-NL)', str(bic_nl_value))    
+            st.metric('Bit Independence Criterion - Nonlinearity (BIC-NL)', str(bic_nl_value))
+            sbox_results['bic_nl'] = bic_nl_value  
         
-        # Export option
-        export_df = pd.DataFrame(sbox)
-        export_buffer = io.BytesIO()
-        export_df.to_excel(export_buffer, index=False, header=False)
-        export_buffer.seek(0)
-        
-        st.download_button(
-            label="Download S-box as Excel",
-            data=export_buffer,
-            file_name="sbox_data.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        # Add download button for all results  
+        add_download_buttons(sbox, evaluation_options, sbox_results)  
     
     except Exception as e:
         st.error(f"Error processing file: {str(e)}")
