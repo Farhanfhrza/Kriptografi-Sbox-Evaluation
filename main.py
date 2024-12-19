@@ -15,7 +15,7 @@ from utils.bit_independence import calculate_bic_sac, calculate_bic_nl
 from utils.create_result import add_download_buttons 
 
 def main():
-    st.title('Advanced S-box Cryptographic Analysis')
+    st.title('S-box Cryptographic Analysis')
     
     # Sidebar for file upload
     st.sidebar.header('Import S-box')
@@ -30,11 +30,8 @@ def main():
         [  
             'Linear Approximation Probability (LAP)',   
             'Nonlinearity',   
-            # 'Differential Uniformity',  
-            # 'Binary Truth Table',  
             'Strict Avalanche Criterion (SAC)',  
             'Differential Approximation Probability (DAP)',  
-            # 'Entropy Analysis',  
             'Bit Independence Criterion - SAC (BIC-SAC)',
             'Bit Independence Criterion - Nonlinearity (BIC-NL)'
         ],  
@@ -45,6 +42,18 @@ def main():
     # Initialize session state for S-box
     if 'sbox' not in st.session_state:
         st.session_state.sbox = None
+
+    # Check if a file is uploaded  
+    if uploaded_file is None:  
+        st.info("Please upload an Excel or CSV file containing the S-box.")  
+        st.markdown("""  
+        ### S-box File Requirements:  
+        - File harus dalam format Excel (.xlsx, .xls) atau CSV  
+        - S-box harus berupa matriks persegi (sebaiknya 16x16 atau 256 elemen)  
+        - Semua nilai harus berupa bilangan bulat  
+        - Tidak ada header atau kolom/baris tambahan  
+        """)  
+        return
     
     try:
         # Read the uploaded file
@@ -91,17 +100,6 @@ def main():
             nonlinearity = compute_nonlinearity(sbox)
             st.metric('Nonlinearity', str(nonlinearity))
             sbox_results['nonlinearity'] = nonlinearity 
-        
-        # # Differential Uniformity
-        # if 'Differential Uniformity' in evaluation_options:
-        #     diff_uniformity = compute_differential_uniformity(sbox)
-        #     st.metric('Differential Uniformity', str(diff_uniformity))
-        
-        # # Binary Truth Table
-        # if 'Binary Truth Table' in evaluation_options:
-        #     binary_table = sbox_to_binary_table(sbox)
-        #     st.subheader('Binary Truth Table')
-        #     st.dataframe(pd.DataFrame(binary_table))
 
         # Strict Avalanche Criterion  
         if 'Strict Avalanche Criterion (SAC)' in evaluation_options:  
@@ -127,12 +125,6 @@ def main():
             dap_value = calculate_dap(sbox)  
             st.metric('Differential Approximation Probability (DAP)', f'{dap_value:.10f}')
             sbox_results['dap'] = dap_value 
-        
-        # Entropy Analysis  
-        # if 'Entropy Analysis' in evaluation_options:  
-        #     entropy_results = compute_entropy(sbox)  
-        #     st.metric('Shannon Entropy', f'{entropy_results["shannon_entropy"]:.10f}')  
-        #     st.metric('Normalized Entropy', f'{entropy_results["normalized_entropy"]:.10f}')
 
         # BIC-SAC  
         if 'Bit Independence Criterion - SAC (BIC-SAC)' in evaluation_options:  
