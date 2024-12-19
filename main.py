@@ -35,7 +35,7 @@ def main():
             'Bit Independence Criterion - SAC (BIC-SAC)',
             'Bit Independence Criterion - Nonlinearity (BIC-NL)'
         ],  
-        default=['Linear Approximation Probability (LAP)'],  
+        default=[''],  
         key='main_evaluation_metrics'  
     )  
     
