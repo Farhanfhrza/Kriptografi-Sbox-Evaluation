@@ -35,7 +35,7 @@ def main():
             'Bit Independence Criterion - SAC (BIC-SAC)',
             'Bit Independence Criterion - Nonlinearity (BIC-NL)'
         ],  
-        default=[''],  
+        default=[],  
         key='main_evaluation_metrics'  
     )  
     
@@ -88,6 +88,11 @@ def main():
         
         # Perform selected evaluations
         st.subheader('S-box Cryptographic Evaluation')
+
+        # Check if any evaluation options are selected  
+        if not evaluation_options:  
+            st.warning("Please select at least one evaluation metric from the sidebar.")  
+            return 
         
         # Linear Approximation Probability
         if 'Linear Approximation Probability (LAP)' in evaluation_options:
